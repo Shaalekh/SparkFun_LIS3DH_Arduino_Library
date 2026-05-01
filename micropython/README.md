@@ -31,7 +31,28 @@ MicroPython port of the [SparkFun LIS3DH Arduino Library](https://github.com/spa
    (*Thonny → Help → Install MicroPython…*).
 2. Open **`micropython/lis3dh.py`** in Thonny.
 3. Choose **File → Save copy… → Raspberry Pi Pico** and save it as `lis3dh.py`.
-4. Open the example you want to run, wire up the sensor (see below), then press **F5** (Run).
+4. **Find your sensor's I²C address** (see next section).
+5. Open the example you want to run, set `SENSOR_ADDRESS` to the value found in step 4, wire up the sensor (see Wiring below), then press **F5** (Run).
+
+---
+
+## Finding the I²C address
+
+Different breakout boards pull the SA0/SDO pin to different levels, giving different addresses (0x18, 0x19, 0x1D, …).  
+Run this one-time scanner in Thonny to discover the exact address your board uses:
+
+```python
+from machine import I2C, Pin
+
+i2c = I2C(0, sda=Pin(0), scl=Pin(1), freq=400_000)
+print("Scanning I2C bus 0 (SDA=GP0, SCL=GP1) …")
+devices = i2c.scan()
+for d in devices:
+    print("  Found device at 0x{:02X} ({})".format(d, d))
+print("Scan complete — {} device(s) found.".format(len(devices)))
+```
+
+Take note of the address printed (e.g. `0x1D`) and use it as `SENSOR_ADDRESS` in the examples.
 
 ---
 
@@ -43,12 +64,14 @@ MicroPython port of the [SparkFun LIS3DH Arduino Library](https://github.com/spa
 |-----------|----------|-----------|
 | VCC / VDD | 3V3 (pin 36) | — |
 | GND       | GND (pin 38) | — |
-| SDA       | Pin 6 | GP4 |
-| SCL       | Pin 7 | GP5 |
-| SDO / SA0 | 3V3 → address **0x19** (default) | — |
+| SDA       | Pin 1 | GP0 |
+| SCL       | Pin 2 | GP1 |
+| SDO / SA0 | 3V3 → address **0x19** | — |
 |           | GND → address **0x18** | — |
+|           | depends on board → may be **0x1D** | — |
 
-> You can use any I²C-capable pins; update `sda` and `scl` in your script accordingly.
+> You can use any I²C-capable pins; update `sda` and `scl` in your script accordingly.  
+> Run the I²C scanner above to find the actual address of *your* breakout board.
 
 ### SPI
 
@@ -73,8 +96,9 @@ MicroPython port of the [SparkFun LIS3DH Arduino Library](https://github.com/spa
 from machine import I2C, Pin
 from lis3dh import LIS3DH
 
-i2c = I2C(0, sda=Pin(4), scl=Pin(5), freq=400_000)
-imu = LIS3DH(i2c=i2c)
+i2c = I2C(0, sda=Pin(0), scl=Pin(1), freq=400_000)
+# Use the address reported by your I2C scanner (0x19, 0x18, 0x1D, …)
+imu = LIS3DH(i2c=i2c, address=0x19)
 imu.begin()
 
 x, y, z = imu.read_accel()   # returns (x, y, z) in g

@@ -159,7 +159,10 @@ class LIS3DH:
         who = self._read_register(_WHO_AM_I)
         if who != _WHO_AM_I_VALUE:
             raise LIS3DHError(
-                "LIS3DH not found — WHO_AM_I=0x{:02X} (expected 0x33)".format(who)
+                "LIS3DH not found at I2C address 0x{:02X} — "
+                "WHO_AM_I=0x{:02X} (expected 0x33).\n"
+                "Run an I2C scanner to find the correct address, then pass it "
+                "as: LIS3DH(i2c=i2c, address=0xXX)".format(self._addr, who)
             )
         self._apply_settings()
 

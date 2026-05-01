@@ -13,9 +13,12 @@ from machine import I2C, Pin
 import utime
 from lis3dh import LIS3DH
 
-i2c = I2C(0, sda=Pin(4), scl=Pin(5), freq=400_000)
+i2c = I2C(0, sda=Pin(0), scl=Pin(1), freq=400_000)
 
-imu = LIS3DH(i2c=i2c)
+# Set this to the address found by your I2C scanner (common: 0x19, 0x18, 0x1D)
+SENSOR_ADDRESS = 0x19
+
+imu = LIS3DH(i2c=i2c, address=SENSOR_ADDRESS)
 
 # Sensor settings
 imu.adc_enabled        = False
